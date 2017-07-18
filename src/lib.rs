@@ -219,9 +219,11 @@ pub fn build(config: &Config, artifacts: &[&str]) -> Result<(), Box<std::error::
     let output_path = config.manifest_path.join("target/doc");
     fs::create_dir_all(&output_path)?;
 
+    let mut stdout = io::stdout();
+
     if artifacts.contains(&"json") {
         print!("generating JSON...");
-        io::stdout().flush()?;
+        stdout.flush()?;
 
         let document = generate_json(&config)?;
         let serialized = serde_json::to_string(&document)?;
@@ -238,7 +240,7 @@ pub fn build(config: &Config, artifacts: &[&str]) -> Result<(), Box<std::error::
     // now that we've written out the data, we can write out the rest of it
     if artifacts.contains(&"assets") {
         print!("copying assets...");
-        io::stdout().flush()?;
+        stdout.flush()?;
 
         let mut assets_path = output_path.clone();
         assets_path.push("assets");
@@ -275,8 +277,10 @@ fn generate_analysis(config: &Config) -> Result<(), Box<std::error::Error>> {
         .env("RUSTFLAGS", "-Z save-analysis")
         .env("CARGO_TARGET_DIR", manifest_path.join("target/rls"));
 
+    let mut stdout = io::stdout();
+
     print!("generating save analysis data...");
-    io::stdout().flush()?;
+    stdout.flush()?;
 
     let output = command.output()?;
 
@@ -293,7 +297,7 @@ fn generate_analysis(config: &Config) -> Result<(), Box<std::error::Error>> {
     println!("done.");
 
     print!("loading save analysis data...");
-    io::stdout().flush()?;
+    stdout.flush()?;
     config.host.reload(manifest_path, manifest_path, true)?;
     println!("done.");
 
